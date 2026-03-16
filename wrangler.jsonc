@@ -1,0 +1,55 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "shopmon-packages",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-03-01",
+	"observability": {
+		"enabled": true
+	},
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"placement": {
+		"mode": "smart"
+	},
+	"routes": [
+		{
+			"custom_domain": true,
+			"pattern": "packages.fos.gg"
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "packages-mirror",
+			"database_id": "b0add9b3-5192-40aa-994f-60aba7aab9bf",
+			"migrations_dir": "drizzle"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "PACKAGES_BUCKET",
+			"bucket_name": "packages-mirror"
+		}
+	],
+	"queues": {
+		"producers": [
+			{
+				"queue": "package-downloads",
+				"binding": "DOWNLOAD_QUEUE"
+			}
+		],
+		"consumers": [
+			{
+				"queue": "package-downloads",
+				"max_batch_size": 100,
+				"max_concurrency": 5
+			}
+		]
+	},
+	"triggers": {
+		"crons": [
+			"0 * * * *"
+		]
+	}
+}

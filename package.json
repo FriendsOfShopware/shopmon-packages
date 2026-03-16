@@ -1,0 +1,21 @@
+{
+	"name": "shopmon-packages",
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy --minify",
+		"cf-typegen": "wrangler types --env-interface CloudflareBindings"
+	},
+	"dependencies": {
+		"drizzle-orm": "^0.45.1",
+		"hono": "^4.12.5"
+	},
+	"overrides": {
+		"esbuild": "^0.25.0"
+	},
+	"devDependencies": {
+		"@types/node": "^25.3.3",
+		"drizzle-kit": "^0.18.1",
+		"wrangler": "^4.70.0"
+	}
+}
