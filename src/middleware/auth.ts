@@ -11,11 +11,20 @@ type AuthEnv = {
 
 export const authMiddleware = createMiddleware<AuthEnv>(async (c, next) => {
   const authHeader = c.req.header("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
+
+  let bearerToken: string | undefined;
+
+  if (authHeader?.startsWith("Bearer ")) {
+    bearerToken = authHeader.slice(7);
+  } else if (authHeader?.startsWith("Basic ")) {
+    const decoded = atob(authHeader.slice(6));
+    bearerToken = decoded.split(":")[1];
+  }
+
+  if (!bearerToken) {
     return c.text("Unauthorized", 401);
   }
 
-  const bearerToken = authHeader.slice(7);
   const token = await db
     .select()
     .from(tokens)
