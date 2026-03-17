@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { eq } from "drizzle-orm";
-import { db, tokens } from "../db/db";
+import { db, tokens, customPackages } from "../db/db";
 import type { SyncTokenMessage } from "../sync";
 
 export async function createToken(c: Context<{ Bindings: CloudflareBindings }>) {
@@ -41,6 +41,18 @@ export async function listTokens(c: Context<{ Bindings: CloudflareBindings }>) {
 
 export async function deleteToken(c: Context<{ Bindings: CloudflareBindings }>) {
   const id = Number(c.req.param("id"));
+
+  // Clean up custom packages
+  const customPkgs = await db
+    .select({ name: customPackages.name, version: customPackages.version })
+    .from(customPackages)
+    .where(eq(customPackages.tokenId, id));
+
+  for (const pkg of customPkgs) {
+    await c.env.PACKAGES_BUCKET.delete(`custom/${id}/${pkg.name}/${pkg.version}.zip`);
+  }
+
+  await db.delete(customPackages).where(eq(customPackages.tokenId, id));
 
   const deleted = await db.delete(tokens).where(eq(tokens.id, id)).returning().get();
 

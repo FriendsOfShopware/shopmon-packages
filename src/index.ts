@@ -3,6 +3,7 @@ import { enqueueSyncForAllTokens, processSyncToken, type QueueMessage } from "./
 import { processDownload } from "./download";
 import { getPackagesJson, getPackageMetadata, downloadPackage } from "./routes/packages";
 import { createToken, listTokens, deleteToken, syncToken } from "./routes/tokens";
+import { uploadPackage, listCustomPackages, deleteCustomPackage } from "./routes/custom-packages";
 import { authMiddleware } from "./middleware/auth";
 import { adminAuthMiddleware } from "./middleware/admin-auth";
 
@@ -17,6 +18,9 @@ app.post("/api/tokens", createToken);
 app.get("/api/tokens", listTokens);
 app.delete("/api/tokens/:id", deleteToken);
 app.post("/api/tokens/:id/sync", syncToken);
+app.post("/api/tokens/:id/packages", uploadPackage);
+app.get("/api/tokens/:id/packages", listCustomPackages);
+app.delete("/api/tokens/:id/packages/:vendor/:name/:version", deleteCustomPackage);
 
 app.get("/api/sync", async (c) => {
   await enqueueSyncForAllTokens(c.env);

@@ -30,3 +30,25 @@ export const packages = sqliteTable(
   },
   (table) => [uniqueIndex("packages_name_version_idx").on(table.name, table.version)],
 );
+
+export const customPackages = sqliteTable(
+  "custom_packages",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    tokenId: integer("token_id").notNull(),
+    name: text("name").notNull(),
+    version: text("version").notNull(),
+    composerJson: text("composer_json", { mode: "json" })
+      .notNull()
+      .$type<Record<string, unknown>>(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("custom_packages_token_name_version_idx").on(
+      table.tokenId,
+      table.name,
+      table.version,
+    ),
+    index("custom_packages_token_id_idx").on(table.tokenId),
+  ],
+);
