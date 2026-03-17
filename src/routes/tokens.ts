@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db, tokens } from "../db/db";
 import type { SyncTokenMessage } from "../sync";
 
@@ -27,11 +27,14 @@ export async function createToken(c: Context<{ Bindings: CloudflareBindings }>) 
 export async function listTokens(c: Context<{ Bindings: CloudflareBindings }>) {
   const source = c.req.query("source");
 
-  const allTokens = await db.select({
-    id: tokens.id,
-    source: tokens.source,
-    lastSyncedAt: tokens.lastSyncedAt,
-  }).from(tokens).where(source ? eq(tokens.source, source) : undefined);
+  const allTokens = await db
+    .select({
+      id: tokens.id,
+      source: tokens.source,
+      lastSyncedAt: tokens.lastSyncedAt,
+    })
+    .from(tokens)
+    .where(source ? eq(tokens.source, source) : undefined);
 
   return c.json(allTokens);
 }

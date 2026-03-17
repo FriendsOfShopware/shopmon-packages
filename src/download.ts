@@ -1,20 +1,14 @@
 import { db, packages } from "./db/db";
 import type { DownloadPackageMessage } from "./sync";
 
-export async function processDownload(
-  message: DownloadPackageMessage,
-  env: CloudflareBindings,
-) {
+export async function processDownload(message: DownloadPackageMessage, env: CloudflareBindings) {
   const { name, version, composerJson, downloadUrl, token } = message;
   const r2Key = `packages/${name}/${version}.zip`;
 
   // Check if already in R2
   const existing = await env.PACKAGES_BUCKET.head(r2Key);
   if (existing) {
-    await db
-      .insert(packages)
-      .values({ name, version, composerJson })
-      .onConflictDoNothing();
+    await db.insert(packages).values({ name, version, composerJson }).onConflictDoNothing();
     return;
   }
 
@@ -37,7 +31,9 @@ export async function processDownload(
     if (errorMessage === '"Plugin license not found."') {
       return;
     }
-    throw new Error(`Failed to download ${name}@${version}: ${response.status} ${response.statusText} - ${errorMessage}`);
+    throw new Error(
+      `Failed to download ${name}@${version}: ${response.status} ${response.statusText} - ${errorMessage}`,
+    );
   }
 
   // Upload to R2
@@ -46,8 +42,5 @@ export async function processDownload(
   });
 
   // Insert package into DB after successful download
-  await db
-    .insert(packages)
-    .values({ name, version, composerJson })
-    .onConflictDoNothing();
+  await db.insert(packages).values({ name, version, composerJson }).onConflictDoNothing();
 }
