@@ -117,5 +117,5 @@ export async function processSyncToken(tokenId: number, env: CloudflareBindings)
     })
     .where(eq(tokens.token, token.token));
 
-    console.log(`Finished syncing token ${token.id}`);
+  console.log(`Finished syncing token ${token.id}`);
 }

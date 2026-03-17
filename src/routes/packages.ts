@@ -26,10 +26,7 @@ export async function getPackageMetadata(c: AuthContext) {
     return c.notFound();
   }
 
-  const allVersions = await db
-    .select()
-    .from(packages)
-    .where(eq(packages.name, packageName));
+  const allVersions = await db.select().from(packages).where(eq(packages.name, packageName));
 
   // Filter to only versions this token has access to
   const versionList = allVersions

@@ -18,11 +18,10 @@ app.get("/api/tokens", listTokens);
 app.delete("/api/tokens/:id", deleteToken);
 app.post("/api/tokens/:id/sync", syncToken);
 
-app.get('/api/sync', async (c) => {
+app.get("/api/sync", async (c) => {
   await enqueueSyncForAllTokens(c.env);
   return c.text("Sync enqueued for all tokens");
 });
-
 
 export default {
   fetch: app.fetch,
@@ -44,7 +43,11 @@ export default {
         }
         message.ack();
       } catch (error) {
-        console.error(`Error processing message:`, error instanceof Error ? error.message : error, error instanceof Error ? error.stack : "");
+        console.error(
+          `Error processing message:`,
+          error instanceof Error ? error.message : error,
+          error instanceof Error ? error.stack : "",
+        );
         message.retry();
       }
     }

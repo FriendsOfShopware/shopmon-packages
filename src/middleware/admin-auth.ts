@@ -1,6 +1,8 @@
 import { createMiddleware } from "hono/factory";
 
-export const adminAuthMiddleware = createMiddleware<{ Bindings: CloudflareBindings & { API_TOKEN: string } }>(async (c, next) => {
+export const adminAuthMiddleware = createMiddleware<{
+  Bindings: CloudflareBindings & { API_TOKEN: string };
+}>(async (c, next) => {
   const authHeader = c.req.header("Authorization");
 
   if (!authHeader?.startsWith("Bearer ")) {

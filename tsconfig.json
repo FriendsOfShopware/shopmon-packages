@@ -12,6 +12,7 @@
     "jsxImportSource": "hono/jsx",
     "types": [
         "./worker-configuration.d.ts",
+        "./test/env.d.ts",
         "node"
     ]
   },
