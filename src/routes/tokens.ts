@@ -16,6 +16,11 @@ export async function createToken(c: Context<{ Bindings: CloudflareBindings }>) 
     .returning()
     .get();
 
+  await c.env.DOWNLOAD_QUEUE.send({
+    type: "sync-token",
+    tokenId: result.id,
+  } satisfies SyncTokenMessage);
+
   return c.json(result, 201);
 }
 
