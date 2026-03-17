@@ -2,6 +2,7 @@ import type { Context } from "hono";
 import { eq } from "drizzle-orm";
 import { db, tokens } from "../db/db";
 import type { SyncTokenMessage } from "../sync";
+import { purgeByToken } from "../cache";
 
 export async function createToken(c: Context<{ Bindings: CloudflareBindings }>) {
   const body = await c.req.json<{ token: string; source?: string }>();
@@ -47,6 +48,8 @@ export async function deleteToken(c: Context<{ Bindings: CloudflareBindings }>) 
   if (!deleted) {
     return c.json({ error: "Token not found" }, 404);
   }
+
+  await purgeByToken(deleted.token, c.env);
 
   return c.json({ success: true });
 }

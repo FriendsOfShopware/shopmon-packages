@@ -5,12 +5,13 @@ import { getPackagesJson, getPackageMetadata, downloadPackage } from "./routes/p
 import { createToken, listTokens, deleteToken, syncToken } from "./routes/tokens";
 import { authMiddleware } from "./middleware/auth";
 import { adminAuthMiddleware } from "./middleware/admin-auth";
+import { cacheMiddleware } from "./middleware/cache";
 
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
-app.get("/packages.json", authMiddleware, getPackagesJson);
-app.get("/p2/*", authMiddleware, getPackageMetadata);
-app.get("/download/*", authMiddleware, downloadPackage);
+app.get("/packages.json", cacheMiddleware, authMiddleware, getPackagesJson);
+app.get("/p2/*", cacheMiddleware, authMiddleware, getPackageMetadata);
+app.get("/download/*", cacheMiddleware, authMiddleware, downloadPackage);
 
 app.use("/api/*", adminAuthMiddleware);
 app.post("/api/tokens", createToken);

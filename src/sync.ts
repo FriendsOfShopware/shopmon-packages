@@ -1,5 +1,6 @@
 import { eq, inArray } from "drizzle-orm";
 import { db, tokens, packages } from "./db/db";
+import { purgeByToken } from "./cache";
 
 interface UpstreamPackageVersion {
   name: string;
@@ -109,6 +110,8 @@ export async function processSyncToken(tokenId: number, env: CloudflareBindings)
     await env.DOWNLOAD_QUEUE.sendBatch(downloadBatch.slice(i, i + 100));
   }
 
+  const packagesChanged = JSON.stringify(token.packages) !== JSON.stringify(tokenPackages);
+
   await db
     .update(tokens)
     .set({
@@ -116,6 +119,10 @@ export async function processSyncToken(tokenId: number, env: CloudflareBindings)
       lastSyncedAt: Math.floor(Date.now() / 1000),
     })
     .where(eq(tokens.token, token.token));
+
+  if (packagesChanged) {
+    await purgeByToken(token.token, env);
+  }
 
   console.log(`Finished syncing token ${token.id}`);
 }
