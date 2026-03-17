@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import { eq } from "drizzle-orm";
 import { db, tokens, packages } from "../db/db";
+import { extractBearerToken, putCache } from "../cache";
 
 type AuthContext = Context<{
   Bindings: CloudflareBindings;
@@ -10,10 +11,16 @@ type AuthContext = Context<{
 export async function getPackagesJson(c: AuthContext) {
   const token = c.get("token");
 
-  return c.json({
+  const response = c.json({
     "metadata-url": "/p2/%package%.json",
     "available-packages": Object.keys(token.packages).sort(),
   });
+
+  const bearerToken = extractBearerToken(c.req.raw);
+  if (bearerToken) {
+    await putCache(c.req.raw, bearerToken, response.clone());
+  }
+  return response;
 }
 
 export async function getPackageMetadata(c: AuthContext) {
@@ -44,11 +51,17 @@ export async function getPackageMetadata(c: AuthContext) {
     return c.notFound();
   }
 
-  return c.json({
+  const response = c.json({
     packages: {
       [packageName]: versionList,
     },
   });
+
+  const bearerToken = extractBearerToken(c.req.raw);
+  if (bearerToken) {
+    await putCache(c.req.raw, bearerToken, response.clone());
+  }
+  return response;
 }
 
 export async function downloadPackage(c: AuthContext) {
@@ -71,10 +84,16 @@ export async function downloadPackage(c: AuthContext) {
     return c.text("Package not found", 404);
   }
 
-  return new Response(object.body, {
+  const response = new Response(object.body, {
     headers: {
       "Content-Type": "application/zip",
       "Content-Disposition": `attachment; filename="${name.replace(/\//g, "-")}-${version}.zip"`,
     },
   });
+
+  const bearerToken = extractBearerToken(c.req.raw);
+  if (bearerToken) {
+    await putCache(c.req.raw, bearerToken, response.clone());
+  }
+  return response;
 }
