@@ -51,5 +51,49 @@
 		"crons": [
 			"0 * * * *"
 		]
+	},
+	"env": {
+		"staging": {
+			"routes": [
+				{
+					"custom_domain": true,
+					"pattern": "packages.staging.fos.gg"
+				}
+			],
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "packages-mirror-staging",
+					"database_id": "56cfef2f-2fcc-4a8b-8678-d51ba0beb581",
+					"migrations_dir": "drizzle"
+				}
+			],
+			"r2_buckets": [
+				{
+					"binding": "PACKAGES_BUCKET",
+					"bucket_name": "packages-mirror-staging"
+				}
+			],
+			"queues": {
+				"producers": [
+					{
+						"queue": "package-downloads-staging",
+						"binding": "DOWNLOAD_QUEUE"
+					}
+				],
+				"consumers": [
+					{
+						"queue": "package-downloads-staging",
+						"max_batch_size": 100,
+						"max_concurrency": 5
+					}
+				]
+			},
+			"triggers": {
+				"crons": [
+					"0 * * * *"
+				]
+			}
+		}
 	}
 }
