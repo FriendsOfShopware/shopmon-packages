@@ -1,5 +1,5 @@
 import { db, packages } from "./db/db";
-import type { DownloadPackageMessage } from "./sync";
+import type { DownloadPackageMessage, PurgePackageCacheMessage } from "./sync";
 
 export async function processDownload(message: DownloadPackageMessage, env: CloudflareBindings) {
   const { name, version, composerJson, downloadUrl, token } = message;
@@ -43,4 +43,10 @@ export async function processDownload(message: DownloadPackageMessage, env: Clou
 
   // Insert package into DB after successful download
   await db.insert(packages).values({ name, version, composerJson }).onConflictDoNothing();
+
+  // Enqueue cache invalidation for this package (deduplicated in batch handler)
+  await env.DOWNLOAD_QUEUE.send({
+    type: "purge-package-cache",
+    name,
+  } satisfies PurgePackageCacheMessage);
 }
