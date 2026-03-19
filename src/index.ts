@@ -6,6 +6,7 @@ import { createToken, listTokens, deleteToken, syncToken } from "./routes/tokens
 import { authMiddleware } from "./middleware/auth";
 import { adminAuthMiddleware } from "./middleware/admin-auth";
 import { cacheMiddleware } from "./middleware/cache";
+import { purgeByCacheTags } from "./cache";
 
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
@@ -32,6 +33,8 @@ export default {
   },
 
   async queue(batch: MessageBatch<QueueMessage>, env: CloudflareBindings) {
+    const packagesToPurge = new Set<string>();
+
     for (const message of batch.messages) {
       try {
         switch (message.body.type) {
@@ -40,6 +43,9 @@ export default {
             break;
           case "download-package":
             await processDownload(message.body, env);
+            break;
+          case "purge-package-cache":
+            packagesToPurge.add(message.body.name);
             break;
         }
         message.ack();
@@ -51,6 +57,11 @@ export default {
         );
         message.retry();
       }
+    }
+
+    if (packagesToPurge.size > 0) {
+      const tags = [...packagesToPurge].map((name) => `p-${name}`);
+      await purgeByCacheTags(tags, env);
     }
   },
 };

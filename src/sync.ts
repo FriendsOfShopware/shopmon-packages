@@ -27,7 +27,12 @@ export interface DownloadPackageMessage {
   token: string;
 }
 
-export type QueueMessage = SyncTokenMessage | DownloadPackageMessage;
+export interface PurgePackageCacheMessage {
+  type: "purge-package-cache";
+  name: string;
+}
+
+export type QueueMessage = SyncTokenMessage | DownloadPackageMessage | PurgePackageCacheMessage;
 
 export async function enqueueSyncForAllTokens(env: CloudflareBindings) {
   const allTokens = await db.select({ id: tokens.id, token: tokens.token }).from(tokens);

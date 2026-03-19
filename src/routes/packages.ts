@@ -59,7 +59,7 @@ export async function getPackageMetadata(c: AuthContext) {
 
   const bearerToken = extractBearerToken(c.req.raw);
   if (bearerToken) {
-    await putCache(c.req.raw, bearerToken, response.clone());
+    await putCache(c.req.raw, bearerToken, response.clone(), [`p-${packageName}`]);
   }
   return response;
 }

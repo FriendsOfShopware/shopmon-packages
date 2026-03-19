@@ -38,15 +38,16 @@ export async function putCache(
   request: Request,
   bearerToken: string,
   response: Response,
+  extraTags: string[] = [],
 ): Promise<void> {
   const hash = await hashToken(bearerToken);
   const cached = new Response(response.body, response);
   cached.headers.set("Cache-Control", "s-maxage=2592000");
-  cached.headers.set("Cache-Tag", `t-${hash}`);
+  cached.headers.set("Cache-Tag", [`t-${hash}`, ...extraTags].join(","));
   await getCache().put(buildCacheKey(request, hash), cached);
 }
 
-export async function purgeByToken(bearerToken: string, env: CloudflareBindings): Promise<void> {
+export async function purgeByCacheTags(tags: string[], env: CloudflareBindings): Promise<void> {
   const zoneId = env.CLOUDFLARE_ZONE_ID;
   const apiToken = env.CLOUDFLARE_API_TOKEN;
 
@@ -55,18 +56,25 @@ export async function purgeByToken(bearerToken: string, env: CloudflareBindings)
     return;
   }
 
-  const tag = await hashToken(bearerToken);
+  // Cloudflare allows max 30 tags per purge request
+  for (let i = 0; i < tags.length; i += 30) {
+    const chunk = tags.slice(i, i + 30);
+    const resp = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/purge_cache`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ tags: chunk }),
+    });
 
-  const resp = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/purge_cache`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ tags: [`t-${tag}`] }),
-  });
-
-  if (!resp.ok) {
-    console.error(`Cache purge failed: ${resp.status} ${await resp.text()}`);
+    if (!resp.ok) {
+      console.error(`Cache purge failed: ${resp.status} ${await resp.text()}`);
+    }
   }
+}
+
+export async function purgeByToken(bearerToken: string, env: CloudflareBindings): Promise<void> {
+  const tag = await hashToken(bearerToken);
+  await purgeByCacheTags([`t-${tag}`], env);
 }
