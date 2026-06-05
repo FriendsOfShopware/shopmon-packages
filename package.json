@@ -20,12 +20,12 @@
 		"undici": "^7.24.4"
 	},
 	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "^0.12.21",
+		"@cloudflare/vitest-pool-workers": "^0.16.13",
 		"@types/node": "^25.3.3",
 		"drizzle-kit": "^0.18.1",
 		"oxfmt": "^0.41.0",
 		"oxlint": "^1.56.0",
-		"vitest": "^3.2.4",
+		"vitest": "^4.1.8",
 		"wrangler": "^4.70.0"
 	}
 }
