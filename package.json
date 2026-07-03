@@ -3,7 +3,9 @@
 	"type": "module",
 	"scripts": {
 		"dev": "wrangler dev",
-		"deploy": "wrangler deploy --minify",
+		"dev:frontend": "npm run dev --prefix frontend",
+		"build:frontend": "npm run build --prefix frontend",
+		"deploy": "npm run build:frontend && wrangler deploy --minify",
 		"cf-typegen": "wrangler types --env-interface CloudflareBindings",
 		"test": "vitest run",
 		"test:watch": "vitest",

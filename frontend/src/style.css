@@ -1,0 +1,97 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+	/* Harbor palette: cool paper, deep-navy ink, Shopware blue kept for actions. */
+	--background: #fbfcfe;
+	--foreground: #12203a;
+	--card: #ffffff;
+	--card-foreground: #12203a;
+	--popover: #ffffff;
+	--popover-foreground: #12203a;
+	--primary: #0c63c4;
+	--primary-foreground: #ffffff;
+	--secondary: #eef2f8;
+	--secondary-foreground: #12203a;
+	--muted: #eef2f8;
+	--muted-foreground: #5c6b84;
+	--accent: #e8f3ff;
+	--accent-foreground: #0c63c4;
+	--destructive: #dc2626;
+	--destructive-foreground: #ffffff;
+	--border: #e3e9f2;
+	--input: #e3e9f2;
+	--ring: #189eff;
+	--radius: 0.5rem;
+	/* The hero code card keeps its own deep-harbor scheme in light and dark. */
+	--terminal: #0e1b30;
+	--terminal-foreground: #c7d5ea;
+	--terminal-accent: #7fc6ff;
+	--terminal-muted: #5c6f8f;
+}
+
+.dark {
+	--background: #0b1626;
+	--foreground: #dbe4f2;
+	--card: #101d31;
+	--card-foreground: #dbe4f2;
+	--popover: #101d31;
+	--popover-foreground: #dbe4f2;
+	--primary: #4da3f5;
+	--primary-foreground: #081221;
+	--secondary: #182842;
+	--secondary-foreground: #dbe4f2;
+	--muted: #182842;
+	--muted-foreground: #8fa2bf;
+	--accent: #16304f;
+	--accent-foreground: #7fc6ff;
+	--destructive: #ef4444;
+	--destructive-foreground: #ffffff;
+	--border: #1f3252;
+	--input: #1f3252;
+	--ring: #4da3f5;
+}
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-terminal: var(--terminal);
+	--color-terminal-foreground: var(--terminal-foreground);
+	--color-terminal-accent: var(--terminal-accent);
+	--color-terminal-muted: var(--terminal-muted);
+	--font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+	--font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	--font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/50;
+	}
+	body {
+		@apply bg-background text-foreground font-sans antialiased;
+	}
+}

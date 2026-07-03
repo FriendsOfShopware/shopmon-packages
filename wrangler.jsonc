@@ -52,6 +52,10 @@
 			"0 * * * *"
 		]
 	},
+	"assets": {
+		"directory": "./frontend/dist",
+		"binding": "ASSETS"
+	},
 	"env": {
 		"staging": {
 			"routes": [
@@ -93,6 +97,10 @@
 				"crons": [
 					"0 * * * *"
 				]
+			},
+			"assets": {
+				"directory": "./frontend/dist",
+				"binding": "ASSETS"
 			}
 		}
 	}

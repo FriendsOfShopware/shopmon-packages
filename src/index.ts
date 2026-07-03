@@ -3,6 +3,7 @@ import { enqueueSyncForAllTokens, processSyncToken, type QueueMessage } from "./
 import { processDownload } from "./download";
 import { getPackagesJson, getPackageMetadata, downloadPackage } from "./routes/packages";
 import { createToken, listTokens, deleteToken, syncToken } from "./routes/tokens";
+import { getPublicPackageDetail, listPublicPackages } from "./routes/public";
 import { authMiddleware } from "./middleware/auth";
 import { adminAuthMiddleware } from "./middleware/admin-auth";
 import { cacheMiddleware } from "./middleware/cache";
@@ -14,6 +15,9 @@ app.get("/packages.json", cacheMiddleware, authMiddleware, getPackagesJson);
 app.get("/p2/*", cacheMiddleware, authMiddleware, getPackageMetadata);
 app.get("/download/*", cacheMiddleware, authMiddleware, downloadPackage);
 
+app.get("/api/public/packages", listPublicPackages);
+app.get("/api/public/packages/:vendor/:name", getPublicPackageDetail);
+
 app.use("/api/*", adminAuthMiddleware);
 app.post("/api/tokens", createToken);
 app.get("/api/tokens", listTokens);
@@ -23,6 +27,21 @@ app.post("/api/tokens/:id/sync", syncToken);
 app.get("/api/sync", async (c) => {
   await enqueueSyncForAllTokens(c.env);
   return c.text("Sync enqueued for all tokens");
+});
+
+// SPA fallback: unmatched GET requests serve the frontend so client-side
+// routes like /package/store/foo work on deep links and reloads.
+app.get("*", (c) => {
+  const path = c.req.path;
+  if (
+    path.startsWith("/api/") ||
+    path.startsWith("/p2/") ||
+    path.startsWith("/download/") ||
+    path === "/packages.json"
+  ) {
+    return c.notFound();
+  }
+  return c.env.ASSETS.fetch(new URL("/", c.req.url));
 });
 
 export default {

@@ -9,10 +9,12 @@ A Cloudflare Worker that mirrors and caches Shopware store packages, allowing mu
 - **Composer-Compatible** - Serves a Composer repository API (`packages.json`, `/p2/` metadata, `/download/` endpoints)
 - **Automatic Sync** - Hourly cron trigger keeps packages up to date via Cloudflare Queues
 - **Admin API** - Manage tokens via a separate admin API secured with a static API token
+- **Public Package Browser** - A Vue frontend at `/` lists all mirrored packages and versions
 
 ## Architecture
 
 - **Runtime**: Cloudflare Workers (Hono)
+- **Frontend**: Vue 3 + Vite + shadcn-vue, served as Worker static assets from `frontend/dist`
 - **Database**: Cloudflare D1 (SQLite) via Drizzle ORM
 - **Storage**: Cloudflare R2
 - **Queue**: Cloudflare Queues for background sync and downloads
@@ -39,7 +41,14 @@ wrangler secret put API_TOKEN
 ## Development
 
 ```bash
+npm run build:frontend  # build the static frontend once (wrangler serves it from frontend/dist)
 npm run dev
+```
+
+For frontend work with hot reload, run the Vite dev server alongside `npm run dev` (API requests are proxied to the worker on port 8787):
+
+```bash
+npm run dev:frontend
 ```
 
 ## Deployment
@@ -57,6 +66,14 @@ npm run deploy
 | `GET` | `/packages.json` | List available packages for the token |
 | `GET` | `/p2/{vendor/name}.json` | Package metadata |
 | `GET` | `/download/{vendor/name}/{version}` | Download a package zip |
+
+### Public Endpoints (no auth)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/` | Package browser frontend |
+| `GET` | `/api/public/packages` | List all mirrored packages and versions |
+| `GET` | `/api/public/packages/{vendor}/{name}` | Package details with per-version release date and Shopware core compatibility |
 
 ### Admin Endpoints (Bearer `API_TOKEN` auth)
 

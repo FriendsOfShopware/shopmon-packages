@@ -9,6 +9,17 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci && npm cache clean --force
 
+# --- frontend stage: build the static frontend served by the worker ---
+FROM node:24-slim AS frontend
+
+WORKDIR /app/frontend
+
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci && npm cache clean --force
+
+COPY frontend/ ./
+RUN npm run build
+
 # --- runtime stage ---
 FROM node:24-slim
 
@@ -19,6 +30,7 @@ ENV CI=true
 # Reuse the installed dependencies, then add the source.
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+COPY --from=frontend /app/frontend/dist ./frontend/dist
 
 EXPOSE 8787
 
