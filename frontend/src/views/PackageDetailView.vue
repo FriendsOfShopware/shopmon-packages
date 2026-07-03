@@ -23,6 +23,13 @@ const hasReleaseDates = computed(
 	() => detail.value?.versions.some((version) => version.releasedAt) ?? false,
 );
 
+// The homepage comes from upstream composer.json; only link to http(s) URLs
+// so a hostile value like "javascript:..." is never rendered as a link.
+const homepage = computed(() => {
+	const url = detail.value?.homepage;
+	return url && /^https?:\/\//i.test(url) ? url : null;
+});
+
 const typeLabels: Record<string, string> = {
 	"shopware-platform-plugin": "Plugin",
 	"shopware-app": "App",
@@ -112,14 +119,15 @@ onMounted(load);
 					<dt>License</dt>
 					<dd class="text-foreground">{{ detail.license }}</dd>
 				</div>
-				<div v-if="detail.homepage" class="flex gap-1.5">
+				<div v-if="homepage" class="flex gap-1.5">
 					<dt>Homepage</dt>
 					<dd>
 						<a
-							:href="detail.homepage"
+							:href="homepage"
+							rel="noopener noreferrer"
 							class="inline-flex items-center gap-1 text-foreground underline underline-offset-2 hover:text-primary"
 						>
-							{{ detail.homepage.replace(/^https?:\/\//, "") }}
+							{{ homepage.replace(/^https?:\/\//, "") }}
 							<ExternalLinkIcon class="size-3" />
 						</a>
 					</dd>
