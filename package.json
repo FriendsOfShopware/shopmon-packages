@@ -15,19 +15,19 @@
 	},
 	"dependencies": {
 		"drizzle-orm": "^0.45.2",
-		"hono": "^4.12.25"
+		"hono": "^4.12.28"
 	},
 	"overrides": {
 		"esbuild": "^0.25.0",
 		"undici": "^7.24.4"
 	},
 	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "^0.16.18",
-		"@types/node": "^25.3.3",
-		"drizzle-kit": "^0.18.1",
-		"oxfmt": "^0.41.0",
-		"oxlint": "^1.56.0",
-		"vitest": "^4.1.8",
-		"wrangler": "^4.103.0"
+		"@cloudflare/vitest-pool-workers": "^0.18.0",
+		"@types/node": "^26.1.0",
+		"drizzle-kit": "^0.31.10",
+		"oxfmt": "^0.57.0",
+		"oxlint": "^1.72.0",
+		"vitest": "^4.1.10",
+		"wrangler": "^4.107.0"
 	}
 }

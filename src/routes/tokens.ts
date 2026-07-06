@@ -49,7 +49,7 @@ export async function deleteToken(c: Context<{ Bindings: CloudflareBindings }>) 
     return c.json({ error: "Token not found" }, 404);
   }
 
-  await purgeByToken(deleted.token, c.env);
+  await purgeByToken(deleted.token, c.env, c.executionCtx);
 
   return c.json({ success: true });
 }

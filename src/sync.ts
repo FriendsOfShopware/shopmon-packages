@@ -49,7 +49,11 @@ export async function enqueueSyncForAllTokens(env: CloudflareBindings) {
   }
 }
 
-export async function processSyncToken(tokenId: number, env: CloudflareBindings) {
+export async function processSyncToken(
+  tokenId: number,
+  env: CloudflareBindings,
+  ctx: Partial<ExecutionContext>,
+) {
   const token = await db.select().from(tokens).where(eq(tokens.id, tokenId)).get();
 
   if (!token) {
@@ -126,7 +130,7 @@ export async function processSyncToken(tokenId: number, env: CloudflareBindings)
     .where(eq(tokens.token, token.token));
 
   if (packagesChanged) {
-    await purgeByToken(token.token, env);
+    await purgeByToken(token.token, env, ctx);
   }
 
   console.log(`Finished syncing token ${token.id}`);
