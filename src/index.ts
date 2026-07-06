@@ -51,14 +51,14 @@ export default {
     ctx.waitUntil(enqueueSyncForAllTokens(env));
   },
 
-  async queue(batch: MessageBatch<QueueMessage>, env: CloudflareBindings) {
+  async queue(batch: MessageBatch<QueueMessage>, env: CloudflareBindings, ctx: ExecutionContext) {
     const packagesToPurge = new Set<string>();
 
     for (const message of batch.messages) {
       try {
         switch (message.body.type) {
           case "sync-token":
-            await processSyncToken(message.body.tokenId, env);
+            await processSyncToken(message.body.tokenId, env, ctx);
             break;
           case "download-package":
             await processDownload(message.body, env);
@@ -80,7 +80,7 @@ export default {
 
     if (packagesToPurge.size > 0) {
       const tags = [...packagesToPurge].map((name) => `p-${name}`);
-      await purgeByCacheTags(tags, env);
+      await purgeByCacheTags(tags, env, ctx);
     }
   },
 };

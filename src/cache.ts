@@ -47,34 +47,23 @@ export async function putCache(
   await getCache().put(buildCacheKey(request, hash), cached);
 }
 
-export async function purgeByCacheTags(tags: string[], env: CloudflareBindings): Promise<void> {
-  const zoneId = env.CLOUDFLARE_ZONE_ID;
-  const apiToken = env.CLOUDFLARE_API_TOKEN;
-
-  if (!zoneId || !apiToken) {
-    console.warn("Missing CLOUDFLARE_ZONE_ID or CLOUDFLARE_API_TOKEN, skipping cache purge");
-    return;
-  }
-
-  // Cloudflare allows max 30 tags per purge request
-  for (let i = 0; i < tags.length; i += 30) {
-    const chunk = tags.slice(i, i + 30);
-    const resp = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/purge_cache`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ tags: chunk }),
-    });
-
-    if (!resp.ok) {
-      console.error(`Cache purge failed: ${resp.status} ${await resp.text()}`);
-    }
+export async function purgeByCacheTags(
+  tags: string[],
+  env: CloudflareBindings,
+  ctx: Partial<ExecutionContext>,
+): Promise<void> {
+  if (ctx.cache) {
+    await ctx.cache.purge({ tags });
+  } else {
+    console.warn("ctx.cache is not available, skipping cache purge");
   }
 }
 
-export async function purgeByToken(bearerToken: string, env: CloudflareBindings): Promise<void> {
+export async function purgeByToken(
+  bearerToken: string,
+  env: CloudflareBindings,
+  ctx: Partial<ExecutionContext>,
+): Promise<void> {
   const tag = await hashToken(bearerToken);
-  await purgeByCacheTags([`t-${tag}`], env);
+  await purgeByCacheTags([`t-${tag}`], env, ctx);
 }
