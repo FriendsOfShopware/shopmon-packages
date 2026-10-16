@@ -70,6 +70,39 @@ describe("caching", () => {
     expect(res2.status).toBe(200);
   });
 
+  it("should serve new versions after a sync without waiting for a purge", async () => {
+    await seedToken("cache-token-3", { "vendor/plugin-c": ["1.0.0"] });
+    await seedPackage("vendor/plugin-c", "1.0.0");
+
+    const headers = { Authorization: "Bearer cache-token-3" };
+    for (let i = 0; i < 2; i++) {
+      const res = await SELF.fetch("http://localhost/p2/vendor/plugin-c.json", { headers });
+      const body = (await res.json()) as { packages: Record<string, unknown[]> };
+      expect(body.packages["vendor/plugin-c"]).toHaveLength(1);
+    }
+
+    await seedPackage("vendor/plugin-c", "1.1.0");
+    await env.DB.prepare("UPDATE tokens SET packages = ? WHERE token = ?")
+      .bind(JSON.stringify({ "vendor/plugin-c": ["1.0.0", "1.1.0"] }), "cache-token-3")
+      .run();
+
+    const res = await SELF.fetch("http://localhost/p2/vendor/plugin-c.json", { headers });
+    const body = (await res.json()) as { packages: Record<string, unknown[]> };
+    expect(body.packages["vendor/plugin-c"]).toHaveLength(2);
+  });
+
+  it("should mark cacheable responses as varying per Authorization header", async () => {
+    for (const url of [
+      "http://localhost/packages.json",
+      "http://localhost/p2/vendor/plugin-a.json",
+    ]) {
+      const res = await SELF.fetch(url, { headers: { Authorization: "Bearer cache-token-1" } });
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Cache-Control")).toContain("s-maxage=");
+      expect(res.headers.get("Vary")).toBe("Authorization");
+    }
+  });
+
   it("should reject unauthenticated and invalid-token requests", async () => {
     const res1 = await SELF.fetch("http://localhost/packages.json");
     expect(res1.status).toBe(401);

@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import { eq } from "drizzle-orm";
 import { db, tokens, packages } from "../db/db";
-import { extractBearerToken, putCache } from "../cache";
+import { extractBearerToken, withCacheHeaders } from "../cache";
 
 type AuthContext = Context<{
   Bindings: CloudflareBindings;
@@ -18,7 +18,7 @@ export async function getPackagesJson(c: AuthContext) {
 
   const bearerToken = extractBearerToken(c.req.raw);
   if (bearerToken) {
-    await putCache(c.req.raw, bearerToken, response.clone());
+    return withCacheHeaders(bearerToken, response);
   }
   return response;
 }
@@ -59,7 +59,7 @@ export async function getPackageMetadata(c: AuthContext) {
 
   const bearerToken = extractBearerToken(c.req.raw);
   if (bearerToken) {
-    await putCache(c.req.raw, bearerToken, response.clone(), [`p-${packageName}`]);
+    return withCacheHeaders(bearerToken, response, [`p-${packageName}`]);
   }
   return response;
 }
@@ -93,7 +93,7 @@ export async function downloadPackage(c: AuthContext) {
 
   const bearerToken = extractBearerToken(c.req.raw);
   if (bearerToken) {
-    await putCache(c.req.raw, bearerToken, response.clone());
+    return withCacheHeaders(bearerToken, response);
   }
   return response;
 }

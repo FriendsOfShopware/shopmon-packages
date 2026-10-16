@@ -1,17 +1,7 @@
-function getCache() {
-  return caches.default;
-}
-
 async function hashToken(token: string): Promise<string> {
   const data = new TextEncoder().encode(token);
   const hash = await crypto.subtle.digest("SHA-256", data);
   return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-function buildCacheKey(request: Request, tokenHash: string): Request {
-  const url = new URL(request.url);
-  url.searchParams.set("_t", tokenHash);
-  return new Request(url.toString(), { method: "GET" });
 }
 
 export function extractBearerToken(request: Request): string | undefined {
@@ -26,25 +16,19 @@ export function extractBearerToken(request: Request): string | undefined {
   return undefined;
 }
 
-export async function matchCache(
-  request: Request,
-  bearerToken: string,
-): Promise<Response | undefined> {
-  const hash = await hashToken(bearerToken);
-  return (await getCache().match(buildCacheKey(request, hash))) ?? undefined;
-}
-
-export async function putCache(
-  request: Request,
+// Responses are cached by Workers Cache in front of the Worker (wrangler.jsonc
+// `cache.enabled`), which purgeByCacheTags can invalidate. Its key does not
+// include the Authorization header, hence the Vary.
+export async function withCacheHeaders(
   bearerToken: string,
   response: Response,
   extraTags: string[] = [],
-): Promise<void> {
+): Promise<Response> {
   const hash = await hashToken(bearerToken);
-  const cached = new Response(response.body, response);
-  cached.headers.set("Cache-Control", "s-maxage=2592000");
-  cached.headers.set("Cache-Tag", [`t-${hash}`, ...extraTags].join(","));
-  await getCache().put(buildCacheKey(request, hash), cached);
+  response.headers.set("Cache-Control", "s-maxage=2592000");
+  response.headers.set("Vary", "Authorization");
+  response.headers.set("Cache-Tag", [`t-${hash}`, ...extraTags].join(","));
+  return response;
 }
 
 export async function purgeByCacheTags(
