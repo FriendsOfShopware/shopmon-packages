@@ -14,6 +14,7 @@
 		"lint": "oxlint src/ test/"
 	},
 	"dependencies": {
+		"@zip.js/zip.js": "^2.24.0",
 		"drizzle-orm": "^0.45.2",
 		"hono": "^4.13.7"
 	},
@@ -25,6 +26,7 @@
 		"@cloudflare/vitest-pool-workers": "^0.18.8",
 		"@types/node": "^26.1.0",
 		"drizzle-kit": "^0.31.10",
+		"hash-wasm": "4.12.0",
 		"oxfmt": "^0.72.0",
 		"oxlint": "^1.72.0",
 		"vitest": "^4.1.11",

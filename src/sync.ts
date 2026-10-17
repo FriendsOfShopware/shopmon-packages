@@ -1,6 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
 import { db, tokens, packages } from "./db/db";
 import { purgeByToken } from "./cache";
+import type { BackfillChecksumsMessage, GenerateChecksumsMessage } from "./checksum-backfill";
 
 interface UpstreamPackageVersion {
   name: string;
@@ -32,7 +33,12 @@ export interface PurgePackageCacheMessage {
   name: string;
 }
 
-export type QueueMessage = SyncTokenMessage | DownloadPackageMessage | PurgePackageCacheMessage;
+export type QueueMessage =
+  | SyncTokenMessage
+  | DownloadPackageMessage
+  | PurgePackageCacheMessage
+  | BackfillChecksumsMessage
+  | GenerateChecksumsMessage;
 
 export async function enqueueSyncForAllTokens(env: CloudflareBindings) {
   const allTokens = await db.select({ id: tokens.id, token: tokens.token }).from(tokens);
