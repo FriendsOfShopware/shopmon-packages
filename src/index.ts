@@ -1,9 +1,15 @@
 import { Hono } from "hono";
 import { enqueueSyncForAllTokens, processSyncToken, type QueueMessage } from "./sync";
 import { processDownload } from "./download";
+import {
+  processChecksumBackfill,
+  processGenerateChecksums,
+  type BackfillChecksumsMessage,
+} from "./checksum-backfill";
 import { getPackagesJson, getPackageMetadata, downloadPackage } from "./routes/packages";
 import { createToken, listTokens, deleteToken, syncToken } from "./routes/tokens";
 import { getPublicPackageDetail, listPublicPackages } from "./routes/public";
+import { getPublicChecksums } from "./routes/checksums";
 import { authMiddleware } from "./middleware/auth";
 import { adminAuthMiddleware } from "./middleware/admin-auth";
 import { purgeByCacheTags } from "./cache";
@@ -16,6 +22,7 @@ app.get("/download/*", authMiddleware, downloadPackage);
 
 app.get("/api/public/packages", listPublicPackages);
 app.get("/api/public/packages/:vendor/:name", getPublicPackageDetail);
+app.get("/api/public/checksums/:vendor/:name/:version", getPublicChecksums);
 
 app.use("/api/*", adminAuthMiddleware);
 app.post("/api/tokens", createToken);
@@ -26,6 +33,13 @@ app.post("/api/tokens/:id/sync", syncToken);
 app.get("/api/sync", async (c) => {
   await enqueueSyncForAllTokens(c.env);
   return c.text("Sync enqueued for all tokens");
+});
+
+app.post("/api/checksums/backfill", async (c) => {
+  await c.env.DOWNLOAD_QUEUE.send({
+    type: "backfill-checksums",
+  } satisfies BackfillChecksumsMessage);
+  return c.json({ message: "Checksum backfill enqueued" }, 202);
 });
 
 // SPA fallback: unmatched GET requests serve the frontend so client-side
@@ -61,6 +75,12 @@ export default {
             break;
           case "download-package":
             await processDownload(message.body, env);
+            break;
+          case "backfill-checksums":
+            await processChecksumBackfill(message.body, env);
+            break;
+          case "generate-checksums":
+            await processGenerateChecksums(message.body, env);
             break;
           case "purge-package-cache":
             packagesToPurge.add(message.body.name);
