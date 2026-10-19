@@ -74,21 +74,19 @@ Worker logs include `checksum-backfill-page` (scanned/enqueued counts and whethe
 
 ```bash
 npm install
-cp wrangler.jsonc wrangler.jsonc  # adjust D1/R2/Queue bindings as needed
+# Adjust D1/R2/Queue bindings in cloudflare.config.ts as needed.
 ```
 
 Create the D1 database and R2 bucket, then run migrations:
 
 ```bash
-cf d1 migrations apply <DATABASE_ID> --dir drizzle
+npx cf d1 migrations apply <DATABASE_ID> --dir drizzle
 ```
 
 Set the `API_TOKEN` secret for admin API authentication:
 
 ```bash
-cf deploy --secrets-file .env
-# or set a single secret with Wrangler:
-# wrangler secret put API_TOKEN
+npx cf deploy --secrets-file .env
 ```
 
 ## Development
