@@ -62,12 +62,12 @@ jobs:
       - name: Build frontend
         run: npm run build --prefix frontend
       - name: Run D1 migrations
-        run: npx wrangler d1 migrations apply packages-mirror-staging --remote --env staging
+        run: npx cf d1 migrations apply 56cfef2f-2fcc-4a8b-8678-d51ba0beb581 --dir drizzle
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Deploy to staging
-        run: npx wrangler deploy --minify --env staging
+        run: npx cf deploy --mode staging
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -92,12 +92,12 @@ jobs:
       - name: Build frontend
         run: npm run build --prefix frontend
       - name: Run D1 migrations
-        run: npx wrangler d1 migrations apply packages-mirror --remote
+        run: npx cf d1 migrations apply b0add9b3-5192-40aa-994f-60aba7aab9bf --dir drizzle
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Deploy to production
-        run: npx wrangler deploy --minify
+        run: npx cf deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

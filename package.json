@@ -1,35 +1,39 @@
 {
-	"name": "shopmon-packages",
-	"type": "module",
-	"scripts": {
-		"dev": "wrangler dev",
-		"dev:frontend": "npm run dev --prefix frontend",
-		"build:frontend": "npm run build --prefix frontend",
-		"deploy": "npm run build:frontend && wrangler deploy --minify",
-		"cf-typegen": "wrangler types --env-interface CloudflareBindings",
-		"test": "vitest run",
-		"test:watch": "vitest",
-		"fmt": "oxfmt --write src/ test/",
-		"fmt:check": "oxfmt src/ test/",
-		"lint": "oxlint src/ test/"
-	},
-	"dependencies": {
-		"@zip.js/zip.js": "^2.24.0",
-		"drizzle-orm": "^0.45.2",
-		"hono": "^4.13.7"
-	},
-	"overrides": {
-		"esbuild": "^0.25.0",
-		"undici": "^7.24.4"
-	},
-	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "^0.18.8",
-		"@types/node": "^26.1.0",
-		"drizzle-kit": "^0.31.10",
-		"hash-wasm": "4.12.0",
-		"oxfmt": "^0.72.0",
-		"oxlint": "^1.72.0",
-		"vitest": "^4.1.11",
-		"wrangler": "^4.114.0"
-	}
+  "name": "shopmon-packages",
+  "type": "module",
+  "scripts": {
+    "dev": "cf dev",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "deploy": "npm run build:frontend && cf deploy",
+    "cf-typegen": "cf workers types",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "fmt": "oxfmt --write src/ test/",
+    "fmt:check": "oxfmt src/ test/",
+    "lint": "oxlint src/ test/"
+  },
+  "dependencies": {
+    "@zip.js/zip.js": "^2.24.0",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.13.7"
+  },
+  "overrides": {
+    "esbuild": "^0.25.0",
+    "undici": "^7.30.1",
+    "miniflare": {
+      "sharp": "^0.35.5"
+    }
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.18.8",
+    "@types/node": "^26.1.0",
+    "cf": "^1.0.0-beta.17",
+    "drizzle-kit": "^0.31.10",
+    "hash-wasm": "4.12.0",
+    "oxfmt": "^0.72.0",
+    "oxlint": "^1.72.0",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.151.0"
+  }
 }

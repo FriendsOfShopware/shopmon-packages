@@ -80,19 +80,21 @@ cp wrangler.jsonc wrangler.jsonc  # adjust D1/R2/Queue bindings as needed
 Create the D1 database and R2 bucket, then run migrations:
 
 ```bash
-wrangler d1 migrations apply packages-mirror
+cf d1 migrations apply <DATABASE_ID> --dir drizzle
 ```
 
 Set the `API_TOKEN` secret for admin API authentication:
 
 ```bash
-wrangler secret put API_TOKEN
+cf deploy --secrets-file .env
+# or set a single secret with Wrangler:
+# wrangler secret put API_TOKEN
 ```
 
 ## Development
 
 ```bash
-npm run build:frontend  # build the static frontend once (wrangler serves it from frontend/dist)
+npm run build:frontend  # build the static frontend once (cf serves it from frontend/dist)
 npm run dev
 ```
 
