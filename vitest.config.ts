@@ -10,7 +10,7 @@ export default defineConfig(async () => {
   const migrationsPath = path.join(__dirname, "drizzle");
   const migrations = await readD1Migrations(migrationsPath);
 
-  // wrangler.jsonc declares the frontend build as a static assets directory;
+  // test/wrangler.jsonc declares the frontend build as a static assets directory;
   // it must exist even when the frontend has not been built.
   fs.mkdirSync(path.join(__dirname, "frontend", "dist"), { recursive: true });
 
@@ -18,7 +18,7 @@ export default defineConfig(async () => {
     plugins: [
       cloudflareTest({
         wrangler: {
-          configPath: "./wrangler.jsonc",
+          configPath: "./test/wrangler.jsonc",
         },
         miniflare: {
           bindings: {
