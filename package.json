@@ -16,7 +16,7 @@
   "dependencies": {
     "@zip.js/zip.js": "^2.24.0",
     "drizzle-orm": "^0.45.2",
-    "hono": "^4.13.7"
+    "hono": "^4.13.11"
   },
   "overrides": {
     "esbuild": "^0.25.0",
