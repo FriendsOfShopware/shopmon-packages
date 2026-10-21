@@ -70,6 +70,47 @@ Worker logs include `checksum-backfill-page` (scanned/enqueued counts and whethe
 
 **Security:** XXH128 is non-cryptographic. These checksums detect content changes but are not proof of authenticity or protection against deliberate tampering. For adversarial integrity verification, use a cryptographic hash (such as SHA-256) with a trusted or signed manifest.
 
+## Security advisories
+
+`packages.json` advertises the Composer security advisory API at `/security-advisories.json`.
+It accepts public GET query parameters or form-encoded POST requests with `packages[]`
+(including Composer's indexed `packages[0]` encoding), and returns full advisories grouped
+by package name. Composer evaluates the `affectedVersions` constraints itself.
+Unknown packages are omitted; an empty table returns `{"advisories":{}}`.
+Responses use `Cache-Control: no-store` so external updates appear immediately.
+Requests are limited to 1 MiB and 1,000 distinct package names.
+
+```bash
+curl https://packages.fos.gg/security-advisories.json \
+  --data-urlencode 'packages[]=store/my-plugin'
+```
+
+Apply migration `drizzle/0002_security_advisories.sql` with the existing D1 migrations
+before deploying. The `security_advisories` table is intentionally empty and will be
+populated externally; there is no importer or write API. It has no foreign key to
+mirrored packages, so advisories can be imported before their packages are mirrored.
+
+External writers should upsert on `(package_name, advisory_id)`. Required columns are
+`package_name` (lowercase Composer name), `advisory_id` (stable identifier),
+`affected_versions` (Composer constraint), `title`, `reported_at` (RFC 3339 timestamp),
+and `sources` (JSON array of `{ "name": "source-name", "remoteId": "source-id" }`,
+with at least one source). `cve`, `link`, and `severity` are nullable; use Composer
+severity values `low`, `medium`, `high`, or `critical` when known. `id` is generated.
+
+```sql
+INSERT INTO security_advisories
+  (package_name, advisory_id, affected_versions, title, reported_at, sources, severity)
+VALUES
+  ('store/my-plugin', 'EXAMPLE-001', '<1.2.3', 'Example vulnerability',
+   '2026-10-21T00:00:00Z', '[{"name":"example","remoteId":"EXAMPLE-001"}]', 'high')
+ON CONFLICT (package_name, advisory_id) DO UPDATE SET
+  affected_versions = excluded.affected_versions,
+  title = excluded.title,
+  reported_at = excluded.reported_at,
+  sources = excluded.sources,
+  severity = excluded.severity;
+```
+
 ## Setup
 
 ```bash
@@ -123,6 +164,7 @@ npm run deploy
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/` | Package browser frontend |
+| `GET`, `POST` | `/security-advisories.json` | Composer security advisories for requested packages |
 | `GET` | `/api/public/packages` | List all mirrored packages and versions |
 | `GET` | `/api/public/packages/{vendor}/{name}` | Package details with per-version release date and Shopware core compatibility |
 | `GET` | `/api/public/checksums/{vendor}/{name}/{version}` | Public XXH128 file manifest with one-year immutable caching |

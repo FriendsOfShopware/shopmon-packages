@@ -14,6 +14,9 @@ export async function getPackagesJson(c: AuthContext) {
   const response = c.json({
     "metadata-url": "/p2/%package%.json",
     "available-packages": Object.keys(token.packages).sort(),
+    "security-advisories": {
+      "api-url": new URL("/security-advisories.json", c.req.url).toString(),
+    },
   });
 
   const bearerToken = extractBearerToken(c.req.raw);

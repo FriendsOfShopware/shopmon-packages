@@ -49,8 +49,12 @@ describe("composer package registry", () => {
     const body = (await res.json()) as {
       "metadata-url": string;
       "available-packages": string[];
+      "security-advisories": { "api-url": string };
     };
     expect(body["metadata-url"]).toBe("/p2/%package%.json");
+    expect(body["security-advisories"]).toEqual({
+      "api-url": "http://localhost/security-advisories.json",
+    });
     expect(body["available-packages"]).toEqual(["store/my-plugin", "store/other-plugin"]);
   });
 
