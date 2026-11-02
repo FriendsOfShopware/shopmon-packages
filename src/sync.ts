@@ -1,6 +1,7 @@
 import { eq, inArray } from "drizzle-orm";
 import { db, tokens, packages } from "./db/db";
 import { purgeByToken } from "./cache";
+import { sendInBatches } from "./queue";
 import type { BackfillChecksumsMessage, GenerateChecksumsMessage } from "./checksum-backfill";
 
 interface UpstreamPackageVersion {
@@ -120,10 +121,7 @@ export async function processSyncToken(
     }
   }
 
-  // Send download jobs in batches (max 100 per sendBatch call)
-  for (let i = 0; i < downloadBatch.length; i += 100) {
-    await env.DOWNLOAD_QUEUE.sendBatch(downloadBatch.slice(i, i + 100));
-  }
+  await sendInBatches(env.DOWNLOAD_QUEUE, downloadBatch);
 
   const packagesChanged = JSON.stringify(token.packages) !== JSON.stringify(tokenPackages);
 

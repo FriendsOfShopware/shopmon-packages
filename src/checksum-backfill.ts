@@ -1,4 +1,5 @@
 import { createChecksumManifest } from "./checksums";
+import { sendInBatches } from "./queue";
 
 export interface BackfillChecksumsMessage {
   type: "backfill-checksums";
@@ -26,7 +27,7 @@ export async function processChecksumBackfill(
       body: { type: "generate-checksums", key: object.key } satisfies GenerateChecksumsMessage,
     }));
 
-  if (jobs.length > 0) await env.DOWNLOAD_QUEUE.sendBatch(jobs);
+  await sendInBatches(env.DOWNLOAD_QUEUE, jobs);
 
   // Only advance after every job in this page is durably enqueued. A retry may
   // enqueue duplicates, but generation skips manifests that already exist.
