@@ -68,6 +68,21 @@ describe("ZIP checksum manifests", () => {
     expect(result.files["__proto__"]).toBe(hash.digest());
   });
 
+  it("hashes many archives concurrently", async () => {
+    // zip.js would otherwise queue tasks beyond navigator.hardwareConcurrency in a
+    // module-global list and resume them from another request's context.
+    const results = await Promise.all(
+      Array.from({ length: 8 }, async (_, i) => {
+        const zip = await zipFiles({ "Plugin/file.txt": new TextEncoder().encode("abc") }, 6);
+        const object = await env.PACKAGES_BUCKET.put(`checksum-concurrent-${i}.zip`, zip);
+        return createChecksumManifest(env.PACKAGES_BUCKET, object);
+      }),
+    );
+    for (const result of results) {
+      expect(result.files).toEqual({ "Plugin/file.txt": "06b05ab6733a618578af5f94892f3950" });
+    }
+  });
+
   it("accepts an empty ZIP", async () => {
     expect(await manifest(await zipFiles({}))).toEqual({ algorithm: "xxh128", files: {} });
   });

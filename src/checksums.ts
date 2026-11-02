@@ -1,9 +1,17 @@
-import { Reader, ZipReader } from "@zip.js/zip.js/index-native.js";
+import { configure, Reader, ZipReader } from "@zip.js/zip.js/index-native.js";
 import { createXXH128 } from "./xxh128";
 
 const MAX_READ_SIZE = 8 * 1024 * 1024;
 const MAX_ENTRIES = 10_000;
 const MAX_UNCOMPRESSED_SIZE = 512 * 1024 * 1024;
+
+// zip.js keeps a module-global codec pool capped at maxWorkers, which defaults to
+// navigator.hardwareConcurrency (1 on Workers). Extra tasks wait in a shared queue
+// and are resumed by whichever task finishes next, i.e. from another request's
+// context, which the runtime cancels ("A promise was resolved or rejected from a
+// different request context"). We decompress inline without web workers, so the
+// cap buys nothing: lift it so every task runs in its own request immediately.
+configure({ maxWorkers: Number.MAX_SAFE_INTEGER });
 
 export interface ChecksumManifest {
   algorithm: "xxh128";
