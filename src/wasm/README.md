@@ -1,3 +1,9 @@
+# ZIP checksums module
+
+`zip-checksums.wasm` is built from the Rust crate in `wasm/zip-checksums/`.
+It hashes a whole ZIP in one call; see that crate's README and
+`scripts/build-zip-checksums-wasm.mjs` for the rebuild steps.
+
 # XXH128 module
 
 `xxh128.wasm` is the unmodified XXH3-128 module embedded in `hash-wasm@4.12.0`

@@ -1,0 +1,21 @@
+[package]
+name = "zip-checksums"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Whole-ZIP XXH128 checksum manifest generator, compiled to WASM for the packages Worker"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde_json = { version = "1.0", default-features = false, features = ["std"] }
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+zip = { version = "2.4", default-features = false, features = ["deflate"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
