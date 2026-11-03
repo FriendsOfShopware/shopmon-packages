@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 serde_json = { version = "1.0", default-features = false, features = ["std"] }
 xxhash-rust = { version = "0.8", features = ["xxh3"] }
-zip = { version = "2.4", default-features = false, features = ["deflate"] }
+zip = { version = "9.0", default-features = false, features = ["deflate"] }
 
 [profile.release]
 opt-level = 3
