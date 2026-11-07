@@ -23,6 +23,7 @@ export default defineConfig(async () => {
         miniflare: {
           bindings: {
             TEST_MIGRATIONS: migrations,
+            SECURITY_ADVISORIES_URL: "https://your-shopmon.example/api/advisories/composer",
             API_TOKEN: "test-api-token",
           },
         },

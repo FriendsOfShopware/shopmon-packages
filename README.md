@@ -72,44 +72,31 @@ Worker logs include `checksum-backfill-page` (scanned/enqueued counts and whethe
 
 ## Security advisories
 
-`packages.json` advertises the Composer security advisory API at `/security-advisories.json`.
-It accepts public GET query parameters or form-encoded POST requests with `packages[]`
-(including Composer's indexed `packages[0]` encoding), and returns full advisories grouped
-by package name. Composer evaluates the `affectedVersions` constraints itself.
-Unknown packages are omitted; an empty table returns `{"advisories":{}}`.
-Responses use `Cache-Control: no-store` so external updates appear immediately.
-Requests are limited to 1 MiB and 1,000 distinct package names.
+Set `SECURITY_ADVISORIES_URL` when running development or deployment to advertise an
+external Composer-compatible advisory API in `packages.json`:
+
+Staging defaults to `https://shopmon.staging.fos.gg/api/advisories/composer`.
+`SECURITY_ADVISORIES_URL` overrides this default when provided.
 
 ```bash
-curl https://packages.fos.gg/security-advisories.json \
-  --data-urlencode 'packages[]=store/my-plugin'
+SECURITY_ADVISORIES_URL=https://your-shopmon.example/api/advisories/composer npm run deploy
 ```
 
-Apply migration `drizzle/0002_security_advisories.sql` with the existing D1 migrations
-before deploying. The `security_advisories` table is intentionally empty and will be
-populated externally; there is no importer or write API. It has no foreign key to
-mirrored packages, so advisories can be imported before their packages are mirrored.
-
-External writers should upsert on `(package_name, advisory_id)`. Required columns are
-`package_name` (lowercase Composer name), `advisory_id` (stable identifier),
-`affected_versions` (Composer constraint), `title`, `reported_at` (RFC 3339 timestamp),
-and `sources` (JSON array of `{ "name": "source-name", "remoteId": "source-id" }`,
-with at least one source). `cve`, `link`, and `severity` are nullable; use Composer
-severity values `low`, `medium`, `high`, or `critical` when known. `id` is generated.
-
-```sql
-INSERT INTO security_advisories
-  (package_name, advisory_id, affected_versions, title, reported_at, sources, severity)
-VALUES
-  ('store/my-plugin', 'EXAMPLE-001', '<1.2.3', 'Example vulnerability',
-   '2026-10-21T00:00:00Z', '[{"name":"example","remoteId":"EXAMPLE-001"}]', 'high')
-ON CONFLICT (package_name, advisory_id) DO UPDATE SET
-  affected_versions = excluded.affected_versions,
-  title = excluded.title,
-  reported_at = excluded.reported_at,
-  sources = excluded.sources,
-  severity = excluded.severity;
+```json
+"security-advisories": {
+  "metadata": false,
+  "api-url": "https://your-shopmon.example/api/advisories/composer"
+}
 ```
+
+Composer queries this URL directly. The service must accept form-encoded POST
+requests with indexed package names (`packages[0]`, `packages[1]`, etc.) and return
+`{"advisories": {...}}` grouped by package name. No advisories are embedded in package
+metadata or stored by this mirror. If the URL is empty, `security-advisories` is omitted.
+
+Apply `drizzle/0003_remove_security_advisories.sql` with the existing migrations to
+remove the old advisory table and its data. The local `/security-advisories.json`
+endpoint has been removed.
 
 ## Setup
 
@@ -164,7 +151,6 @@ npm run deploy
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/` | Package browser frontend |
-| `GET`, `POST` | `/security-advisories.json` | Composer security advisories for requested packages |
 | `GET` | `/api/public/packages` | List all mirrored packages and versions |
 | `GET` | `/api/public/packages/{vendor}/{name}` | Package details with per-version release date and Shopware core compatibility |
 | `GET` | `/api/public/checksums/{vendor}/{name}/{version}` | Public XXH128 file manifest with one-year immutable caching |
