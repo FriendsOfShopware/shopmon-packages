@@ -1,6 +1,4 @@
 import { Hono } from "hono";
-import { bodyLimit } from "hono/body-limit";
-import { getSecurityAdvisories } from "./routes/security-advisories";
 import { enqueueSyncForAllTokens, processSyncToken, type QueueMessage } from "./sync";
 import { processDownload } from "./download";
 import {
@@ -21,13 +19,6 @@ const app = new Hono<{ Bindings: CloudflareBindings }>();
 app.get("/packages.json", authMiddleware, getPackagesJson);
 app.get("/p2/*", authMiddleware, getPackageMetadata);
 app.get("/download/*", authMiddleware, downloadPackage);
-app.on(
-  ["GET", "POST"],
-  "/security-advisories.json",
-  bodyLimit({ maxSize: 1024 * 1024 }),
-  getSecurityAdvisories,
-);
-
 app.get("/api/public/packages", listPublicPackages);
 app.get("/api/public/packages/:vendor/:name", getPublicPackageDetail);
 app.get("/api/public/checksums/:vendor/:name/:version", getPublicChecksums);
@@ -58,7 +49,8 @@ app.get("*", (c) => {
     path.startsWith("/api/") ||
     path.startsWith("/p2/") ||
     path.startsWith("/download/") ||
-    path === "/packages.json"
+    path === "/packages.json" ||
+    path === "/security-advisories.json"
   ) {
     return c.notFound();
   }

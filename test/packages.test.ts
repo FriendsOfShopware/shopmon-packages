@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { env, SELF } from "cloudflare:test";
+import { createExecutionContext, env, SELF } from "cloudflare:test";
+import worker from "../src/index";
 
 async function seedToken(token: string, packages: Record<string, string[]>) {
   await env.DB.prepare("INSERT INTO tokens (token, source, packages) VALUES (?, ?, ?)")
@@ -49,13 +50,37 @@ describe("composer package registry", () => {
     const body = (await res.json()) as {
       "metadata-url": string;
       "available-packages": string[];
-      "security-advisories": { "api-url": string };
+      "security-advisories": { metadata: boolean; "api-url": string };
     };
     expect(body["metadata-url"]).toBe("/p2/%package%.json");
     expect(body["security-advisories"]).toEqual({
-      "api-url": "http://localhost/security-advisories.json",
+      metadata: false,
+      "api-url": "https://your-shopmon.example/api/advisories/composer",
     });
     expect(body["available-packages"]).toEqual(["store/my-plugin", "store/other-plugin"]);
+  });
+
+  it("omits security advisories when no external URL is configured", async () => {
+    const res = await worker.fetch(
+      new Request("http://localhost/packages.json", {
+        headers: { Authorization: "Bearer registry-token" },
+      }),
+      { ...env, SECURITY_ADVISORIES_URL: "" },
+      createExecutionContext(),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).not.toHaveProperty("security-advisories");
+  });
+
+  it("no longer serves the local advisory API", async () => {
+    for (const method of ["GET", "POST"]) {
+      const res = await SELF.fetch("http://localhost/security-advisories.json", { method });
+      expect(res.status).toBe(404);
+    }
+    const table = await env.DB.prepare(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'security_advisories'",
+    ).first();
+    expect(table).toBeNull();
   });
 
   it("GET /p2/{package}.json returns composer metadata with dist url", async () => {
