@@ -72,11 +72,11 @@ Worker logs include `checksum-backfill-page` (scanned/enqueued counts and whethe
 
 ## Security advisories
 
-Set `SECURITY_ADVISORIES_URL` when running development or deployment to advertise an
-external Composer-compatible advisory API in `packages.json`:
+`packages.json` advertises an external Composer-compatible advisory API.
 
 Staging defaults to `https://shopmon.staging.fos.gg/api/advisories/composer`.
-`SECURITY_ADVISORIES_URL` overrides this default when provided.
+Production defaults to `https://shopmon.fos.gg/api/advisories/composer`.
+Set `SECURITY_ADVISORIES_URL` during development or deployment to override the default:
 
 ```bash
 SECURITY_ADVISORIES_URL=https://your-shopmon.example/api/advisories/composer npm run deploy
