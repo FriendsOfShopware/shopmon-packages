@@ -40,7 +40,9 @@ export default defineConfig((ctx) => {
 			env: {
 				SECURITY_ADVISORIES_URL: bindings.text(
 					process.env.SECURITY_ADVISORIES_URL ??
-						(staging ? "https://shopmon.staging.fos.gg/api/advisories/composer" : ""),
+						(staging
+							? "https://shopmon.staging.fos.gg/api/advisories/composer"
+							: "https://shopmon.fos.gg/api/advisories/composer"),
 				),
 				DB: bindings.d1({
 					name: `packages-mirror${suffix}`,
